@@ -184,8 +184,8 @@ COMPUTING_POWER. Если данная переменная не указана,
 # Примеры запросов на успешное добавление выражения c последующем успешным результатом
 ```
 curl --header "Content-Type: application/json" --request POST --data {\"id\":1,\"expression\":\"21*(7+5)\"} http://localhost:8080/api/v1/calculate
-curl --header "Content-Type: application/json" --request POST --data {\"id\":3,\"expression\":\"-1+2\"} http://localhost:8080/api/v1/calculate
-curl --header "Content-Type: application/json" --request POST --data {\"id\":4,\"expression\":\"32*0.5+16/32-(34+16)-100\"} http://localhost:8080/api/v1/calculate
+curl --header "Content-Type: application/json" --request POST --data {\"id\":2,\"expression\":\"-1+2\"} http://localhost:8080/api/v1/calculate
+curl --header "Content-Type: application/json" --request POST --data {\"id\":3,\"expression\":\"32*0.5+16/32-(34+16)-100\"} http://localhost:8080/api/v1/calculate
 curl --header "Content-Type: application/json" --request POST --data {\"id\":4,\"expression\":\"(1+(-60+4+15*0.2))*(1+0.5*3)\"} http://localhost:8080/api/v1/calculate
 ```
 
