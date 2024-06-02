@@ -117,7 +117,7 @@ func BreakExpressionIntoTasks(exp *model.Expression, st store.Store) {
 						} else {
 							if tsPrev.TaskNext.TaskNext == nil {
 								tsPrev.TaskNext.TaskNext = ts
-								ts.ArgTaskOne = tsNext
+								ts.ArgTaskOne = tsPrev.TaskNext
 							} else {
 								tsPrev.TaskNext.TaskNext.TaskNext = ts
 								ts.ArgTaskOne = tsPrev.TaskNext.TaskNext
