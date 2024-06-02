@@ -134,21 +134,6 @@ func (s *server) GetEpressionHandler(ctx context.Context) http.Handler {
 	})
 }
 
-type TaskResp struct {
-	Id         uuid.UUID `json:"id"`
-	Exp        int       `json:"ExpId"`
-	ArgOne     float64   `json:"arg1"`
-	ArgTaskOne uuid.UUID `json:"argTaskIdOne"`
-	ArgTwo     float64   `json:"arg2"`
-	ArgTaskTwo uuid.UUID `json:"argTaskTwo"`
-	Oper       string    `json:"operation"`
-	OperTime   int       `json:"operation_time"`
-	Prior      int       `json:"prior"`
-	Status     string    `json:"status"`
-	Result     float64   `json:"result"`
-	TaskNext   uuid.UUID `json:"taskIdNext"`
-}
-
 func (s *server) GetTasksHandler(ctx context.Context) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		s.logger.Debugln("GetTasksHandler")
@@ -163,6 +148,21 @@ func (s *server) GetTasksHandler(ctx context.Context) http.Handler {
 			s.logger.Error("Task().GetList err - ", err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+
+		type TaskResp struct {
+			Id         uuid.UUID     `json:"id"`
+			Exp        int           `json:"ExpId"`
+			ArgOne     float64       `json:"arg1"`
+			ArgTaskOne uuid.UUID     `json:"argTaskIdOne"`
+			ArgTwo     float64       `json:"arg2"`
+			ArgTaskTwo uuid.UUID     `json:"argTaskTwo"`
+			Oper       string        `json:"operation"`
+			OperTime   time.Duration `json:"operation_time"`
+			Prior      int           `json:"prior"`
+			Status     string        `json:"status"`
+			Result     float64       `json:"result"`
+			TaskNext   uuid.UUID     `json:"taskIdNext"`
 		}
 
 		tasksResp := make([]*TaskResp, 0, len(taskList))
@@ -202,14 +202,6 @@ func (s *server) GetTasksHandler(ctx context.Context) http.Handler {
 	})
 }
 
-type TaskToCompleteResp struct {
-	Id       uuid.UUID `json:"id"`
-	Arg1     float64   `json:"arg1"`
-	Arg2     float64   `json:"arg2"`
-	Oper     string    `json:"operation"`
-	OperTime int       `json:"operation_time"`
-}
-
 func (s *server) GetTaskToCompleteHandler(ctx context.Context) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		s.logger.Debugln("GetTaskToCompleteHandler")
@@ -228,6 +220,14 @@ func (s *server) GetTaskToCompleteHandler(ctx context.Context) http.Handler {
 			if task.Exp != nil && task.Exp.Status != memstore.EXP_STATUS_ERORR {
 				break
 			}
+		}
+
+		type TaskToCompleteResp struct {
+			Id       uuid.UUID     `json:"id"`
+			Arg1     float64       `json:"arg1"`
+			Arg2     float64       `json:"arg2"`
+			Oper     string        `json:"operation"`
+			OperTime time.Duration `json:"operation_time"`
 		}
 
 		tasksResp := &TaskToCompleteResp{
@@ -250,11 +250,6 @@ func (s *server) GetTaskToCompleteHandler(ctx context.Context) http.Handler {
 	})
 }
 
-type TaskResultReq struct {
-	Id     uuid.UUID `json:"id"`
-	Result float64   `json:"result"`
-}
-
 func (s *server) PostTaskResultHandler(ctx context.Context) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		s.logger.Debugln("PostTaskResultHandler")
@@ -266,6 +261,10 @@ func (s *server) PostTaskResultHandler(ctx context.Context) http.Handler {
 			return
 		}
 
+		type TaskResultReq struct {
+			Id     uuid.UUID `json:"id"`
+			Result float64   `json:"result"`
+		}
 		var taskRes TaskResultReq
 		err = json.Unmarshal(reqTxt, &taskRes)
 		if err != nil {
@@ -273,12 +272,15 @@ func (s *server) PostTaskResultHandler(ctx context.Context) http.Handler {
 			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 			return
 		}
+
 		t, err := s.store.Task().Find(taskRes.Id)
 		if err != nil {
-			s.logger.Error("Unmarshal err - ", err.Error())
+			s.logger.Error("taskRes.Id - ", taskRes.Id)
+			s.logger.Error("Task().Find err - ", err.Error())
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+
 		if t.Status != memstore.TASK_STATUS_PROC {
 			http.Error(w, "task in inappropriate status", http.StatusUnprocessableEntity)
 			return

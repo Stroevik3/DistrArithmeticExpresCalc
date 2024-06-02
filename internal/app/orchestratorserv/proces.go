@@ -2,6 +2,7 @@ package orchestratorserv
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/Stroevik3/DistrArithmeticExpresCalc/internal/app/orchestratorserv/model"
 	"github.com/Stroevik3/DistrArithmeticExpresCalc/internal/app/orchestratorserv/store"
@@ -18,18 +19,18 @@ const (
 	BRACKET_RIGHT string = ")"
 	DOT_SYMBOK    string = "."
 
-	TIME_ADDITION_MS        int = 7000  // время выполнения операции сложения в милисекундах
-	TIME_SUBTRACTION_MS     int = 1700  // время выполнения операции вычитания в милисекундах
-	TIME_MULTIPLICATIONS_MS int = 26000 // время выполнения операции умножения в милисекундах
-	TIME_DIVISIONS_MS       int = 38000 // время выполнения операции деления в милисекундах
+	TIME_ADDITION_MS        time.Duration = (7000 * time.Millisecond)  // время выполнения операции сложения в милисекундах
+	TIME_SUBTRACTION_MS     time.Duration = (1700 * time.Millisecond)  // время выполнения операции вычитания в милисекундах
+	TIME_MULTIPLICATIONS_MS time.Duration = (26000 * time.Millisecond) // время выполнения операции умножения в милисекундах
+	TIME_DIVISIONS_MS       time.Duration = (38000 * time.Millisecond) // время выполнения операции деления в милисекундах
 
 	// Чем больше приоритет тем он выше
 	PRIORITY_ONE int = 1
 	PRIORITY_TWO int = 2
 )
 
-func GetTimeMsOp(op string) int {
-	var res int
+func GetTimeMsOp(op string) time.Duration {
+	var res time.Duration
 	switch op {
 	case OPER_SYMB_ADDIT:
 		res = TIME_ADDITION_MS
@@ -106,10 +107,22 @@ func BreakExpressionIntoTasks(exp *model.Expression, st store.Store) {
 					if tsPrev.TaskNext == nil {
 						tsPrev.TaskNext = ts
 						ts.ArgTaskOne = tsPrev
-					} else if tsNext != nil {
-						tsNext.TaskNext = ts
-						ts.ArgTaskOne = tsNext
-						tsNext = nil
+					} else {
+						if tsPrev.TaskNext.Prior < ts.Prior {
+							tsNext = tsPrev.TaskNext
+							tsPrev.TaskNext = ts
+							ts.ArgTaskOne = tsPrev
+							ts.TaskNext = tsNext
+							tsNext.ArgTaskTwo = ts
+						} else {
+							if tsPrev.TaskNext.TaskNext == nil {
+								tsPrev.TaskNext.TaskNext = ts
+								ts.ArgTaskOne = tsNext
+							} else {
+								tsPrev.TaskNext.TaskNext.TaskNext = ts
+								ts.ArgTaskOne = tsPrev.TaskNext.TaskNext
+							}
+						}
 					}
 					err := st.Task().Add(tsPrev)
 					if err != nil {
@@ -130,7 +143,6 @@ func BreakExpressionIntoTasks(exp *model.Expression, st store.Store) {
 					tsPrev.ArgTaskTwo = ts
 					ts.ArgOne = arg
 					ts.TaskNext = tsPrev
-					tsNext = tsPrev
 					err := st.Task().Add(tsPrev)
 					if err != nil {
 						exp.Status = memstore.EXP_STATUS_ERORR

@@ -56,7 +56,7 @@ func runHTTPCLServer(ctx context.Context, cfg *Config, c *client) {
 			if err != nil {
 				continue
 			}
-			time.Sleep(time.Duration(t.OperTime) * time.Millisecond)
+			time.Sleep(t.OperTime)
 			switch t.Oper {
 			case OPER_SYMB_ADDIT:
 				res = t.ArgOne + t.ArgTwo

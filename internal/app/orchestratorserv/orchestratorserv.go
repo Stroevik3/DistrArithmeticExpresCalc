@@ -36,7 +36,7 @@ func runHTTPServer(ctx context.Context, cfg *Config, s *server) {
 	s.mux.Handle("POST /api/v1/calculate", s.SetEpressionHandler(ctx))
 	s.mux.Handle("GET /api/v1/expressions", s.GetEpressionsHandler(ctx))
 	s.mux.Handle("GET /api/v1/expressions/{id}", s.GetEpressionHandler(ctx))
-	s.mux.Handle("GET /api/v1/tasks", s.GetTasksHandler(ctx))
+	//s.mux.Handle("GET /api/v1/tasks", s.GetTasksHandler(ctx))
 	s.mux.Handle("GET /internal/task", s.GetTaskToCompleteHandler(ctx))
 	s.mux.Handle("POST /internal/task", s.PostTaskResultHandler(ctx))
 
